@@ -3,8 +3,7 @@ import Header from './pages/header/Header';
 import Login from './pages/auth/login/Login';
 import Signup from './pages/auth/signup/Signup';
 import Dashboard from './pages/dashboard/Dashboard';
-import { ToastContainer } from 'react-toastify'; // ✅ Add this
-import 'react-toastify/dist/ReactToastify.css'; // ✅ Import styles
+import PostIssue from "./pages/post/Post";
 
 // ✅ Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +32,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/post" element={
+        <PostIssue />
+        } />
       </Routes>
       
     </div>
