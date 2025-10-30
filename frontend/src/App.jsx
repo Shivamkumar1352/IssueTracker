@@ -1,42 +1,63 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
-import Header from './pages/header/Header';
-import Login from './pages/auth/login/Login';
-import Signup from './pages/auth/signup/Signup';
-import Dashboard from './pages/dashboard/Dashboard';
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import Header from "./pages/header/Header";
+import Login from "./pages/auth/login/Login";
+import Signup from "./pages/auth/signup/Signup";
+import Dashboard from "./pages/dashboard/Dashboard";
 import PostIssue from "./pages/post/Post";
+import { handleError } from "./utils/utils";
+import { useRef, useEffect } from "react";
+import IssueDetails from "./pages/post/IssueDetails";
 
 // ✅ Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" />;
+  const token = localStorage.getItem("token");
+  const hasShownToast = useRef(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!token && !hasShownToast.current) {
+      handleError("Login required!");
+      hasShownToast.current = true; // show toast only once per unauthorized access
+    }
+  }, [token, location]);
+
+  return token ? children : <Navigate to="/login" replace />;
 };
 
 function App() {
   return (
     <div className="min-h-screen bg-[#181818] text-blue-100">
       <Header />
+
       <Routes>
-        {/* Default Route Redirects to Dashboard */}
+        {/* Default Route → Redirect to Home */}
         <Route path="/" element={<Navigate to="/home" />} />
 
-        {/* Auth Routes */}
+        {/* Public Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Routes */}
+        {/* Public Route → Anyone can view Dashboard */}
+        <Route path="/home" element={<Dashboard />} />
+
+        {/* Protected Route → Only logged in users can post */}
         <Route
-          path="/home"
+          path="/post"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <PostIssue />
             </ProtectedRoute>
           }
         />
-        <Route path="/post" element={
-        <PostIssue />
-        } />
+       <Route
+          path="/issue/:id"
+          element={
+            <ProtectedRoute>
+              <IssueDetails />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-      
     </div>
   );
 }

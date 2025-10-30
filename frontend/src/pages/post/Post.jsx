@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+import { handleError, handleSuccess } from "../../utils/utils"; 
 
 const PostIssue = () => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [photo, setPhoto] = useState(null);
@@ -34,10 +35,11 @@ const PostIssue = () => {
           setLocation(address);
         } catch (err) {
           console.error("Error getting address:", err);
+          handleError("Failed to get location details");
         }
       });
     } else {
-      toast.error("Geolocation is not supported by this browser.");
+      handleError("Geolocation is not supported by this browser.");
     }
   }, []);
 
@@ -57,16 +59,12 @@ const PostIssue = () => {
     e.preventDefault();
 
     if (!title || !description || !photo) {
-      toast.error("Please fill all fields!");
+      handleError("Please fill all fields!");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Please login again!");
-        return;
-      }
 
       // ⛅ Upload image to Cloudinary
       const formData = new FormData();
@@ -96,14 +94,15 @@ const PostIssue = () => {
         },
       });
 
-      toast.success("Issue posted successfully!");
+      handleSuccess("Issue posted successfully!");
       setTitle("");
       setDescription("");
       setPhoto(null);
       setPreview("");
+       setTimeout(() => navigate("/home"), 1000);
     } catch (err) {
       console.error("Error posting issue:", err.response?.data || err.message);
-      toast.error("Error posting issue");
+      handleError("Failed to post issue. Try again.");
     }
   };
 
@@ -180,8 +179,6 @@ const PostIssue = () => {
             Submit Issue
           </button>
         </form>
-
-        <ToastContainer />
       </div>
     </div>
   );
