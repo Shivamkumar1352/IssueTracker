@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react"; // 👈 Added User icon
 import "./Header.css";
 import { handleSuccess } from "../../utils/utils";
 import { useState } from "react";
@@ -14,14 +14,6 @@ const Header = () => {
   const token = localStorage.getItem("token");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    handleSuccess("Logged out successfully! 👋");
-    setTimeout(() => {
-      navigate("/login");
-    }, 1500);
-  };
-
   const handleLogin = () => navigate("/login");
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -29,7 +21,6 @@ const Header = () => {
     <header className="fixed top-0 left-0 bg-[#1f1f1f] h-16 w-full flex items-center px-6 md:px-10 text-white shadow-lg z-50">
       {/* ===== Mobile Layout ===== */}
       <div className="flex w-full items-center justify-between md:hidden relative">
-        {/* Left: Hamburger */}
         <button
           className="flex items-center justify-center text-white z-20"
           onClick={toggleMenu}
@@ -37,7 +28,6 @@ const Header = () => {
           {menuOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
 
-        {/* Center: Heading */}
         <div
           className="absolute left-1/2 transform -translate-x-1/2 cursor-pointer"
           onClick={() => navigate("/home")}
@@ -81,10 +71,10 @@ const Header = () => {
 
           {token ? (
             <button
-              onClick={handleLogout}
-              className="ml-2 inline-flex items-center px-4 py-2 rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              onClick={() => navigate("/profile")}
+              className="ml-2 inline-flex items-center px-4 py-2 rounded-md bg-[#B387F5] text-black font-semibold hover:bg-[#a173e0] transition"
             >
-              Logout
+              <User size={18} className="mr-2" /> Profile
             </button>
           ) : (
             <button
@@ -115,11 +105,11 @@ const Header = () => {
             <button
               onClick={() => {
                 setMenuOpen(false);
-                handleLogout();
+                navigate("/profile");
               }}
-              className="inline-flex items-center px-5 py-2 rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              className="inline-flex items-center px-5 py-2 rounded-md bg-[#B387F5] text-black font-semibold hover:bg-[#a173e0] transition"
             >
-              Logout
+              <User size={18} className="mr-2" /> Profile
             </button>
           ) : (
             <button

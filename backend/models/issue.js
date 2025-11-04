@@ -16,50 +16,55 @@ const issueSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: [true, "Issue description is required"],
+      required: [true, "Description is required"],
       trim: true,
       minlength: 10,
       maxlength: 2000,
     },
     imageUrl: {
       type: String,
-      required: true,
+      required: [true, "Image URL is required"],
     },
     location: {
-      lat: {
-        type: Number,
-        required: true,
-      },
-      lng: {
-        type: Number,
-        required: true,
-      },
-      address: {
-        type: String,
-        default: "Unknown location",
-      },
-    },
-    date: {
-      type: Date,
-      default: Date.now,
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
+      address: { type: String, default: "Unknown location" },
+      city: { type: String },
+      state: { type: String },
+      country: { type: String },
     },
     status: {
       type: String,
       enum: ["Pending", "Working", "Done"],
       default: "Pending",
     },
-    upvotes: [
+    severity: {
+      type: String,
+      enum: ["Low", "Medium", "High", "Critical"],
+      default: "Low",
+    },
+    category: {
+      type: String,
+      enum: [
+        "Road",
+        "Electricity",
+        "Water",
+        "Garbage",
+        "Public Safety",
+        "Other",
+      ],
+      default: "Other",
+    },
+    upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    comments: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        text: String,
+        createdAt: { type: Date, default: Date.now },
       },
     ],
-    downvotes: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    resolvedAt: { type: Date },
   },
   { timestamps: true }
 );

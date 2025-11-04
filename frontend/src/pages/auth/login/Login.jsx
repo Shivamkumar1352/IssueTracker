@@ -2,63 +2,53 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { handleError, handleSuccess } from "../../../utils/utils";
 import axios from "axios";
-import './login.css';
+import "./login.css";
+
 const Login = () => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    const [loginInfo, setLoginInfo] = useState({
-        email: '',
-        password: ''
-    })
-    const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
-    const handleChange = (e)=>{
-        const {name, value} = e.target;
-        // console.log(name,value);
-        const copyLoginInfo = {...loginInfo};
-        copyLoginInfo[name] = value;
-        setLoginInfo(copyLoginInfo);
-    }
+  const [loginInfo, setLoginInfo] = useState({
+    email: "",
+    password: "",
+  });
 
-    const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setLoginInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const {email, password } = loginInfo;
+    const { email, password } = loginInfo;
 
-    if (!email || !password) {
-        return handleError('All fields are required');
-    }
+    if (!email || !password)
+      return handleError("Email and password are required");
 
     try {
-        const url = `${API_URL}/user/login`;
-        const response = await axios.post(url, loginInfo);
-        const result = response.data;
-        console.log(result);
-        const { message, success, jwtToken, name, user, error } = result;
-        if (success) {
-            handleSuccess(message);
-            localStorage.setItem('token', jwtToken);
-            localStorage.setItem('loggedInUser', name);
-            localStorage.setItem('user', user._id); 
-            
-            setTimeout(() => {
-                navigate('/home');
-            }, 1000);
-        } else {
-            const joiMessage = error?.details?.[0]?.message;
-            handleError(joiMessage || message || 'Login failed');
-        }
+      const { data } = await axios.post(`${API_URL}/user/login`, loginInfo);
 
+      if (data.success) {
+        const { message, jwtToken, user } = data;
+        handleSuccess(message);
+
+        // 🧠 Save token and user
+        localStorage.setItem("token", jwtToken);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (user.role === "admin") navigate("/admin/dashboard");
+          else navigate("/home");
+        }, 1000);
+      } else {
+        handleError(data.message || "Login failed");
+      }
     } catch (err) {
-        // ✅ handle Axios errors correctly
-        if (err.response && err.response.data) {
-            const { error, message } = err.response.data;
-            const joiMessage = error?.details?.[0]?.message;
-            handleError(joiMessage || message || 'Login failed');
-        } else {
-            handleError(err.message || 'Something went wrong');
-        }
+      const message = err.response?.data?.message || "Login failed";
+      handleError(message);
     }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#181818] text-white px-4 pt-20">
@@ -68,7 +58,6 @@ const Login = () => {
         </h1>
 
         <form onSubmit={handleLogin} className="space-y-6">
-          {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm mb-2">
               Email
@@ -79,11 +68,10 @@ const Login = () => {
               name="email"
               placeholder="Enter your email"
               value={loginInfo.email}
-              className="bubble-input w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-[#b387f5] transition-all"
+              className="bubble-input w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-[#b387f5]"
             />
           </div>
 
-          {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm mb-2">
               Password
@@ -94,11 +82,10 @@ const Login = () => {
               name="password"
               placeholder="Enter your password"
               value={loginInfo.password}
-              className="bubble-input w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-[#b387f5] transition-all"
+              className="bubble-input w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-[#b387f5]"
             />
           </div>
 
-          {/* Button */}
           <button
             type="submit"
             className="w-full py-3 rounded-lg bg-[#b387f5] text-black font-semibold hover:bg-[#a173e0] transition-all shadow-md"
@@ -106,7 +93,6 @@ const Login = () => {
             Login
           </button>
 
-          {/* Redirect */}
           <p className="text-sm text-center text-gray-400">
             Don't have an account?{" "}
             <Link
@@ -120,6 +106,6 @@ const Login = () => {
       </div>
     </div>
   );
-}
+};
 
-export default Login
+export default Login;

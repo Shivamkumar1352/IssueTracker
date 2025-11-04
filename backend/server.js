@@ -1,27 +1,34 @@
-const express = require('express');
-const mongoose = require('mongoose');
-require('dotenv').config();
-const userRoute = require('./routes/userRoute');
+const express = require("express");
+const mongoose = require("mongoose");
+require("dotenv").config();
+const userRoute = require("./routes/userRoute");
 const issueRoutes = require("./routes/issueRoute");
-const bodyParser = require("body-parser");
-const cors = require('cors');
+const cors = require("cors");
 
 const app = express();
-app.use(bodyParser.json());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: 'http://localhost:5173' }));
 
+// ✅ Enable CORS for frontend
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
 
+// ✅ Increase payload limit (to handle large image or base64 data)
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+
+// ✅ Register routes
 app.use("/issues", issueRoutes);
 app.use("/user", userRoute);
 
-const PORT = process.env.PORT
-const MONGO_URI = process.env.MONGO_URI
+// ✅ MongoDB + Server connection
+const PORT = process.env.PORT || 9000;
+const MONGO_URI = process.env.MONGO_URI;
 
-mongoose.connect(MONGO_URI).then(()=>{
-    app.listen(PORT,()=>{
-    console.log(`server is running on: ${PORT}`);
-})
-console.log("database connected");
-})
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    app.listen(PORT, () => console.log(`✅ Server is running on: ${PORT}`));
+    console.log("✅ Database connected");
+  })
+  .catch((err) => console.error("❌ MongoDB connection error:", err));

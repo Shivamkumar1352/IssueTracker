@@ -7,6 +7,7 @@ import PostIssue from "./pages/post/Post";
 import { handleError } from "./utils/utils";
 import { useRef, useEffect } from "react";
 import IssueDetails from "./pages/post/IssueDetails";
+import Profile from "./pages/profile/Profile";
 
 // ✅ Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -57,7 +58,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/profile" element={<Profile/>}/>
       </Routes>
+      
     </div>
   );
 }

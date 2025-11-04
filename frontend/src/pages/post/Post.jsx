@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { handleError, handleSuccess } from "../../utils/utils"; 
+import { handleError, handleSuccess } from "../../utils/utils";
 
 const PostIssue = () => {
   const navigate = useNavigate();
@@ -9,14 +9,16 @@ const PostIssue = () => {
   const [description, setDescription] = useState("");
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState("");
-  const [location, setLocation] = useState("");
+  const [address, setAddress] = useState("");
   const [coords, setCoords] = useState({ lat: null, lng: null });
+  const [category, setCategory] = useState("Other");
+  const [severity, setSeverity] = useState("Low");
 
   const API_URL = import.meta.env.VITE_API_URL;
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  // 🧭 Get user's current location
+  // 🗺️ Get user's location + reverse geocode
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -25,156 +27,156 @@ const PostIssue = () => {
         setCoords({ lat, lng });
 
         try {
-          const response = await axios.get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
-              import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-            }`
+          const res = await axios.get(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
           );
-          const address =
-            response.data.results[0]?.formatted_address || "Unknown location";
-          setLocation(address);
-        } catch (err) {
-          console.error("Error getting address:", err);
-          handleError("Failed to get location details");
+          const result = res.data.results[0];
+          const formattedAddress = result?.formatted_address || "Unknown location";
+          const addressComponents = result?.address_components || [];
+
+          const getPart = (type) =>
+            addressComponents.find((c) => c.types.includes(type))?.long_name || "";
+
+          setAddress(formattedAddress);
+          setCoords((prev) => ({
+            ...prev,
+            city: getPart("locality"),
+            state: getPart("administrative_area_level_1"),
+            country: getPart("country"),
+          }));
+        } catch {
+          handleError("Failed to fetch address");
         }
       });
-    } else {
-      handleError("Geolocation is not supported by this browser.");
     }
   }, []);
 
-  // 🖼️ Handle photo selection
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     setPhoto(file);
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-    } else {
-      setPreview("");
-    }
+    setPreview(file ? URL.createObjectURL(file) : "");
   };
 
-  // 🚀 Submit issue
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!title || !description || !photo) {
-      handleError("Please fill all fields!");
+      handleError("All fields are required!");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) return handleError("Unauthorized. Please log in.");
 
-      // ⛅ Upload image to Cloudinary
+      // Upload image to Cloudinary
       const formData = new FormData();
       formData.append("file", photo);
       formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      const uploadRes = await axios.post(CLOUDINARY_URL, formData);
+      const imageUrl = uploadRes.data.secure_url;
 
-      const cloudinaryRes = await axios.post(CLOUDINARY_URL, formData);
-      const imageUrl = cloudinaryRes.data.secure_url;
-
-      // 📝 Create issue object
+      // Prepare issue data
       const issueData = {
         title,
         description,
         imageUrl,
+        category,
+        severity,
         location: {
           lat: coords.lat,
           lng: coords.lng,
-          address: location,
+          address,
+          city: coords.city,
+          state: coords.state,
+          country: coords.country,
         },
       };
 
-      // 🚀 Post issue to backend
+      // Send to backend
       await axios.post(`${API_URL}/issues`, issueData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      handleSuccess("Issue posted successfully!");
-      setTitle("");
-      setDescription("");
-      setPhoto(null);
-      setPreview("");
-       setTimeout(() => navigate("/home"), 1000);
+      handleSuccess("Issue created successfully!");
+      setTimeout(() => navigate("/home"), 1200);
     } catch (err) {
-      console.error("Error posting issue:", err.response?.data || err.message);
-      handleError("Failed to post issue. Try again.");
+      console.error(err);
+      handleError(err.response?.data?.message || "Failed to create issue");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#181818] text-white px-4 pt-20">
-      <div className="w-full max-w-md bg-[#1f1f1f] rounded-2xl shadow-xl border border-[#b387f5]/30 p-8">
-        <h2 className="text-3xl font-bold text-center mb-6 text-[#b387f5]">
+    <div className="min-h-screen flex justify-center items-center bg-[#181818] text-white pt-20">
+      <div className="w-full max-w-md bg-[#1f1f1f] p-8 rounded-2xl shadow-xl border border-[#b387f5]/30">
+        <h2 className="text-3xl text-center text-[#b387f5] mb-6 font-bold">
           Post a Local Issue
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
-          <div>
-            <label htmlFor="title" className="block text-sm mb-2">
-              Issue Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              placeholder="Enter issue title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="bubble-input w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-[#b387f5] transition-all"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Issue Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:border-[#b387f5]"
+          />
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm mb-2">
-              Description
-            </label>
-            <textarea
-              id="description"
-              placeholder="Describe the issue..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bubble-input w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 h-28 focus:outline-none focus:border-[#b387f5] transition-all resize-none"
-            />
-          </div>
+          <textarea
+            placeholder="Describe the issue..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 h-28 resize-none focus:border-[#b387f5]"
+          />
 
-          {/* Image Upload */}
-          <div>
-            <label htmlFor="photo" className="block text-sm mb-2">
-              Upload Photo
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-[#b387f5] file:text-black hover:file:bg-[#a173e0] transition-all"
-            />
-          </div>
+          {/* Category */}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:border-[#b387f5]"
+          >
+             <option>Road</option>
+            <option>Electricity</option>
+            <option>Water</option>
+            <option>Garbage</option>
+            <option>Public Safety</option>
+            <option>Other</option>
+          </select>
 
-          {/* Preview */}
+          {/* Severity */}
+          <select
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value)}
+            className="w-full bg-transparent border border-gray-500 rounded-lg px-4 py-2 focus:border-[#b387f5]"
+          >
+           <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="w-full text-sm file:bg-[#b387f5] file:text-black file:px-3 file:py-1 file:rounded-md"
+          />
+
           {preview && (
             <img
               src={preview}
               alt="Preview"
-              className="w-full h-64 object-cover rounded-lg border border-[#b387f5]/40"
+              className="w-full h-60 rounded-lg border object-cover"
             />
           )}
 
-          {/* Location */}
-          <div className="text-sm text-gray-300 bg-[#2a2a2a] p-3 rounded-lg border border-gray-600">
-            <strong className="text-[#b387f5]">📍 Location:</strong>{" "}
-            {location ? location : "Fetching your location..."}
-          </div>
+          <p className="text-sm text-gray-300">
+            📍 {address ? address : "Fetching location..."}
+          </p>
 
-          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-[#b387f5] text-black font-semibold hover:bg-[#a173e0] transition-all shadow-md"
+            className="w-full py-3 bg-[#b387f5] text-black rounded-lg hover:bg-[#a173e0] font-semibold"
           >
             Submit Issue
           </button>
