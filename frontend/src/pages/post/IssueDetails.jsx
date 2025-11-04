@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { handleError, handleSuccess } from "../../utils/utils";
+import { jwtDecode } from "jwt-decode";
 
 const IssueDetails = () => {
   const { id } = useParams();
@@ -12,8 +13,23 @@ const IssueDetails = () => {
   const [loading, setLoading] = useState(true);
   const [votes, setVotes] = useState({ upvotes: 0, downvotes: 0 });
   const [comment, setComment] = useState("");
+  const [status, setStatus] = useState("");
+  const [userRole, setUserRole] = useState("");
 
-  // Fetch issue by ID
+  // 🧩 Decode role from JWT stored in localStorage
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserRole(decoded.role || "user");
+      } catch {
+        console.error("Invalid token");
+      }
+    }
+  }, []);
+
+  // 🧩 Fetch issue details
   const fetchIssue = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -21,11 +37,13 @@ const IssueDetails = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setIssue(res.data.issue);
+      setStatus(res.data.issue.status || "Pending");
       setVotes({
-        upvotes: res.data.issue.upvotes.length,
-        downvotes: res.data.issue.downvotes.length,
+        upvotes: res.data.issue.upvotes?.length || 0,
+        downvotes: res.data.issue.downvotes?.length || 0,
       });
-    } catch {
+    } catch (error) {
+      console.error("Error fetching issue:", error);
       handleError("Failed to load issue details");
     } finally {
       setLoading(false);
@@ -34,9 +52,9 @@ const IssueDetails = () => {
 
   useEffect(() => {
     fetchIssue();
-  }, [API_URL, id]);
+  }, [id]);
 
-  // Handle Upvote/Downvote
+  // 🧩 Handle votes
   const handleVote = async (type) => {
     try {
       const token = localStorage.getItem("token");
@@ -52,7 +70,7 @@ const IssueDetails = () => {
     }
   };
 
-  // Add comment
+  // 🧩 Add comment
   const handleAddComment = async () => {
     if (!comment.trim()) return handleError("Comment cannot be empty");
     try {
@@ -66,10 +84,26 @@ const IssueDetails = () => {
       setComment("");
       setIssue((prev) => ({
         ...prev,
-        comments: res.data.comments, // updated comments from backend
+        comments: res.data.comments,
       }));
     } catch {
       handleError("Failed to add comment");
+    }
+  };
+
+  // 🧩 Admin can update status
+  const handleStatusUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `${API_URL}/issues/${id}/status`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      handleSuccess("Status updated!");
+      fetchIssue();
+    } catch {
+      handleError("Failed to update status");
     }
   };
 
@@ -78,6 +112,14 @@ const IssueDetails = () => {
 
   if (!issue)
     return <div className="text-center text-red-400 mt-20">Issue not found.</div>;
+
+  // 🧩 Separate comments
+  const adminComments = issue.comments?.filter(
+    (c) => c.user?.role === "admin"
+  ) || [];
+  const userComments = issue.comments?.filter(
+    (c) => c.user?.role !== "admin"
+  ) || [];
 
   return (
     <div className="min-h-screen bg-[#181818] text-white px-4 pt-24 pb-16">
@@ -95,6 +137,44 @@ const IssueDetails = () => {
           {new Date(issue.createdAt).toLocaleDateString()}
         </p>
 
+        {/* 🟢 Status */}
+        <p className="text-gray-400 mb-2">
+          <span className="text-[#b387f5] font-semibold">Status:</span>{" "}
+          <span
+            className={`${
+              status === "Done"
+                ? "text-green-400"
+                : status === "Working"
+                ? "text-yellow-400"
+                : "text-red-400"
+            } font-semibold`}
+          >
+            {status}
+          </span>
+        </p>
+
+        {/* 🧩 Admin-only status update */}
+        {userRole === "admin" && (
+          <div className="flex gap-3 items-center mb-4">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="bg-transparent border border-[#b387f5]/50 text-white rounded-lg px-4 py-2"
+            >
+              <option value="Pending">Pending</option>
+              <option value="Working">Working</option>
+              <option value="Done">Done</option>
+            </select>
+
+            <button
+              onClick={handleStatusUpdate}
+              className="px-4 py-2 bg-[#b387f5] text-black rounded-lg hover:bg-[#a173e0]"
+            >
+              Update Status
+            </button>
+          </div>
+        )}
+
         <p className="text-gray-400 mb-2">
           <span className="text-[#b387f5] font-semibold">Category:</span>{" "}
           {issue.category || "N/A"}
@@ -104,6 +184,7 @@ const IssueDetails = () => {
           {issue.severity || "N/A"}
         </p>
 
+        {/* 🖼️ Image */}
         <img
           src={issue.imageUrl}
           alt={issue.title}
@@ -142,13 +223,13 @@ const IssueDetails = () => {
           </button>
         </div>
 
-        {/* 💬 Comments Section */}
+        {/* 💬 Comments */}
         <div className="border-t border-[#b387f5]/20 pt-6">
           <h2 className="text-2xl font-semibold text-[#b387f5] mb-4">
             Comments
           </h2>
 
-          {/* Add comment input */}
+          {/* Add comment */}
           <div className="flex gap-3 mb-6">
             <input
               type="text"
@@ -165,22 +246,42 @@ const IssueDetails = () => {
             </button>
           </div>
 
-          {/* Display comments */}
-          {issue.comments?.length > 0 ? (
-            issue.comments.map((c, i) => (
+          {/* 🧾 Scrollable Comments */}
+          <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+            {[...adminComments, ...userComments].map((c, i) => (
               <div
                 key={i}
-                className="border-b border-gray-700 py-3 flex flex-col"
+                className={`border border-gray-800 py-3 px-4 mb-3 rounded-xl ${
+                  c.user?.role === "admin"
+                    ? "bg-[#1f1f1f]"
+                    : "bg-[#1f1f1f]"
+                }`}
               >
-                <span className="text-[#b387f5] font-semibold">
-                  {c.user?.name || "Anonymous"}
-                </span>
-                <span className="text-gray-300 text-sm">{c.text}</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span
+                    className={`font-semibold ${
+                      c.user?.role === "admin" ? "text-green-400" : "text-[#b387f5]"
+                    }`}
+                  >
+                    {c.user?.name || "Anonymous"}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(c.createdAt).toLocaleString()}
+                  </span>
+                </div>
+
+                {/* {c.user?.role === "admin" && (
+                  <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-md font-medium">
+                    Admin
+                  </span>
+                )} */}
+
+                <p className="text-gray-300 text-sm leading-relaxed mt-1">
+                  {c.text}
+                </p>
               </div>
-            ))
-          ) : (
-            <p className="text-gray-500">No comments yet.</p>
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </div>

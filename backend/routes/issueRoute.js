@@ -10,7 +10,7 @@ const {
   updateIssueStatus,
   deleteIssue,
 } = require("../controllers/issueController");
-const { protect } = require("../middlewares/auth");
+const { protect, authorize } = require("../middlewares/auth");
 
 // 🟢 Create issue
 router.post("/", protect, createIssue);
@@ -33,7 +33,8 @@ router.patch("/:id/downvote", protect, downvoteIssue);
 // 💬 Add comment
 router.post("/:id/comment", protect, addComment); // 👈 NEW COMMENT ROUTE
 
+router.use(protect, authorize("admin"));
 // 🧩 Admin: Update status
-router.patch("/:id/status", protect, updateIssueStatus); // Optional
+router.patch("/:id/status", updateIssueStatus); // Optional
 
 module.exports = router;

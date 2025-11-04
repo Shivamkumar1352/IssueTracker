@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, User } from "lucide-react"; // 👈 Added User icon
+import { Menu, X, User, Shield } from "lucide-react"; // 👈 Added Shield icon for admin
 import "./Header.css";
-import { handleSuccess } from "../../utils/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const navLinks = [
   { name: "Home", path: "/home" },
@@ -13,6 +13,20 @@ const Header = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        if (decoded.role === "admin") {
+          setIsAdmin(true);
+        }
+      } catch (err) {
+        console.error("Invalid token:", err);
+      }
+    }
+  }, [token]);
 
   const handleLogin = () => navigate("/login");
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -69,6 +83,15 @@ const Header = () => {
             </Link>
           ))}
 
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin/dashboard")}
+              className="ml-2 inline-flex items-center px-4 py-2 rounded-md bg-[#FFD700] text-black font-semibold hover:bg-[#e6c200] transition"
+            >
+              <Shield size={18} className="mr-2" /> Admin Panel
+            </button>
+          )}
+
           {token ? (
             <button
               onClick={() => navigate("/profile")}
@@ -100,6 +123,18 @@ const Header = () => {
               {link.name}
             </Link>
           ))}
+
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                navigate("/admin/dashboard");
+              }}
+              className="inline-flex items-center px-5 py-2 rounded-md bg-[#FFD700] text-black font-semibold hover:bg-[#e6c200] transition"
+            >
+              <Shield size={18} className="mr-2" /> Admin Panel
+            </button>
+          )}
 
           {token ? (
             <button

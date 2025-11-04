@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const userRoute = require("./routes/userRoute");
 const issueRoutes = require("./routes/issueRoute");
+const adminRoutes = require('./routes/adminRoute');
 const cors = require("cors");
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 // ✅ Register routes
 app.use("/issues", issueRoutes);
 app.use("/user", userRoute);
+app.use("/admin", adminRoutes);
 
 // ✅ MongoDB + Server connection
 const PORT = process.env.PORT || 9000;

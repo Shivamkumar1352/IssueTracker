@@ -8,6 +8,8 @@ import { handleError } from "./utils/utils";
 import { useRef, useEffect } from "react";
 import IssueDetails from "./pages/post/IssueDetails";
 import Profile from "./pages/profile/Profile";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminRoute from "./pages/admin/AdminRoute";
 
 // ✅ Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -59,6 +61,14 @@ function App() {
           }
         />
         <Route path="/profile" element={<Profile/>}/>
+        <Route
+    path="/admin/dashboard"
+    element={
+      <AdminRoute>
+        <AdminDashboard />
+      </AdminRoute>
+    }
+  />
       </Routes>
       
     </div>

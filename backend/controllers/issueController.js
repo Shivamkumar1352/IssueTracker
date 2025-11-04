@@ -95,7 +95,7 @@ const getIssueById = async (req, res) => {
 
     const issue = await Issue.findById(id)
       .populate("user", "name email role profilePic")
-      .populate("comments.user", "name profilePic");
+      .populate("comments.user", "name email role profilePic");
 
     if (!issue) {
       return res.status(404).json({ success: false, message: "Issue not found" });
