@@ -10,8 +10,9 @@ import IssueDetails from "./pages/post/IssueDetails";
 import Profile from "./pages/profile/Profile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoute from "./pages/admin/AdminRoute";
+import LandingPage from "./pages/landing/LandingPage";
+import ChatBot from "./components/ChatBot";          {/* ✅ ADD THIS LINE */}
 
-// ✅ Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   const hasShownToast = useRef(false);
@@ -20,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
   useEffect(() => {
     if (!token && !hasShownToast.current) {
       handleError("Login required!");
-      hasShownToast.current = true; // show toast only once per unauthorized access
+      hasShownToast.current = true;
     }
   }, [token, location]);
 
@@ -29,48 +30,27 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#181818] text-blue-100">
+    <div className="min-h-screen">
       <Header />
-
       <Routes>
-        {/* Default Route → Redirect to Home */}
-        <Route path="/" element={<Navigate to="/home" />} />
+        {/* Welcome / landing page */}
+        <Route path="/"    element={<LandingPage />} />
 
-        {/* Public Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        {/* Auth */}
+        <Route path="/login"   element={<Login />} />
+        <Route path="/signup"  element={<Signup />} />
 
-        {/* Public Route → Anyone can view Dashboard */}
-        <Route path="/home" element={<Dashboard />} />
+        {/* Issues dashboard (public) */}
+        <Route path="/home"    element={<Dashboard />} />
 
-        {/* Protected Route → Only logged in users can post */}
-        <Route
-          path="/post"
-          element={
-            <ProtectedRoute>
-              <PostIssue />
-            </ProtectedRoute>
-          }
-        />
-       <Route
-          path="/issue/:id"
-          element={
-            <ProtectedRoute>
-              <IssueDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/profile" element={<Profile/>}/>
-        <Route
-    path="/admin/dashboard"
-    element={
-      <AdminRoute>
-        <AdminDashboard />
-      </AdminRoute>
-    }
-  />
+        {/* Protected */}
+        <Route path="/post"        element={<ProtectedRoute><PostIssue /></ProtectedRoute>} />
+        <Route path="/issue/:id"   element={<ProtectedRoute><IssueDetails /></ProtectedRoute>} />
+        <Route path="/profile"     element={<Profile />} />
+        <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
-      
+
+      <ChatBot />     {/* ✅ ADD THIS LINE — renders the floating bot on every page */}
     </div>
   );
 }
