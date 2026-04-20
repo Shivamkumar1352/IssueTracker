@@ -13,10 +13,6 @@
     "@react-google-maps/api": "^2.20.7",
     "@tailwindcss/vite": "^4.1.16",
     "axios": "^1.13.0",
-<<<<<<< HEAD
-    "baseline-browser-mapping": "^2.10.19",
-=======
->>>>>>> 815d937f81c12294b4ef6a1c58185a04a61624aa
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.548.0",
     "react": "^19.1.1",
