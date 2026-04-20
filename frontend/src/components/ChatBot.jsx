@@ -415,7 +415,11 @@ const ChatBot = () => {
       >
         {open
           ? <X size={22} />
+<<<<<<< HEAD
           : <span style={{ fontSize: "26px", lineHeight: 1 }}>🤖</span>
+=======
+          : <span style={{ fontSize: "26px", lineHeight: 1 }}>🪔</span>
+>>>>>>> 815d937f81c12294b4ef6a1c58185a04a61624aa
         }
 
         {/* Unread dot */}
