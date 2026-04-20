@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap');
+@import "tailwindcss";
 
 /* ================================================================
    TRACKSEVA — INDIAN AESTHETIC DESIGN SYSTEM
@@ -85,11 +85,23 @@
 /* ── GLOBAL BASE ── */
 *, *::before, *::after { box-sizing: border-box; }
 
+html {
+  background-color: var(--bg-base);
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
   font-family: var(--font-body);
   background-color: var(--bg-base);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 h1, h2, h3, .font-display { font-family: var(--font-display); }

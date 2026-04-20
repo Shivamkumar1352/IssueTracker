@@ -11,7 +11,7 @@ import Profile from "./pages/profile/Profile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoute from "./pages/admin/AdminRoute";
 import LandingPage from "./pages/landing/LandingPage";
-import ChatBot from "./components/ChatBot";          {/* ✅ ADD THIS LINE */}
+import ChatBot from "./components/ChatBot";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -50,7 +50,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
 
-      <ChatBot />     {/* ✅ ADD THIS LINE — renders the floating bot on every page */}
+      <ChatBot />
     </div>
   );
 }

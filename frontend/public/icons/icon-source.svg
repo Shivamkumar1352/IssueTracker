@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">CivicEye app icon</title>
+  <desc id="desc">A saffron-to-teal gradient civic app icon with a stylized eye and location marker.</desc>
+  <defs>
+    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fef6ea" />
+      <stop offset="1" stop-color="#ffd8ae" />
+    </linearGradient>
+    <linearGradient id="accent" x1="120" y1="80" x2="404" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e8650a" />
+      <stop offset="1" stop-color="#007c6e" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)" />
+  <rect x="28" y="28" width="456" height="456" rx="104" fill="none" stroke="#c04800" stroke-opacity=".18" stroke-width="10" />
+  <path d="M256 112c-86.6 0-155.4 57-195 144 39.6 87 108.4 144 195 144s155.4-57 195-144c-39.6-87-108.4-144-195-144Z" fill="#fff5e6" stroke="#5c2d0a" stroke-opacity=".16" stroke-width="12"/>
+  <path d="M256 148c-63.4 0-116.1 41.3-149.8 108C139.9 322.7 192.6 364 256 364s116.1-41.3 149.8-108C372.1 189.3 319.4 148 256 148Z" fill="url(#accent)"/>
+  <circle cx="256" cy="256" r="62" fill="#fff5e8"/>
+  <circle cx="256" cy="256" r="34" fill="#1a0e05"/>
+  <circle cx="272" cy="240" r="10" fill="#fff5e8"/>
+  <path d="M366 128c-29.8 0-54 24.2-54 54 0 43.7 54 108 54 108s54-64.3 54-108c0-29.8-24.2-54-54-54Z" fill="#c04800"/>
+  <circle cx="366" cy="182" r="21" fill="#fff5e8"/>
+</svg>
