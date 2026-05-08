@@ -1,0 +1,351 @@
+PROJECT: CivicEye / Issue Tracker
+TYPE: High-level pseudocode
+
+1. USER SIGNUP
+START
+  READ name, email, password, optional profile picture
+  IF name OR email OR password is missing
+    RETURN error
+  ENDIF
+
+  CHECK if user already exists by email
+  IF user exists
+    RETURN "User already exists"
+  ENDIF
+
+  HASH password
+
+  IF profile picture is provided
+    UPLOAD image to Cloudinary
+    SAVE returned image URL
+  ELSE
+    USE default profile image
+  ENDIF
+
+  CREATE new user with role = "user"
+  SAVE user in MongoDB
+  RETURN signup success
+END
+
+2. USER LOGIN
+START
+  READ email and password
+  IF email OR password is missing
+    RETURN error
+  ENDIF
+
+  FIND user by email
+  IF user not found
+    RETURN "User not found"
+  ENDIF
+
+  IF user account is inactive
+    RETURN "Account deactivated"
+  ENDIF
+
+  COMPARE entered password with hashed password
+  IF password is invalid
+    RETURN "Invalid credentials"
+  ENDIF
+
+  GENERATE JWT token
+  UPDATE last login timestamp
+  RETURN token and user details
+END
+
+3. LOAD USER PROFILE
+START
+  VERIFY JWT token
+  FIND logged-in user in MongoDB
+  POPULATE reported issues
+  RETURN user profile data
+END
+
+4. CREATE ISSUE
+START
+  VERIFY JWT token
+  READ title, description, image, category, severity
+  GET user geolocation from browser
+  REVERSE GEOCODE location using Google Maps API
+
+  IF required fields are missing
+    RETURN error
+  ENDIF
+
+  UPLOAD issue image to Cloudinary
+  STORE returned image URL
+
+  CREATE issue with:
+    owner user ID
+    title
+    description
+    image URL
+    location
+    category
+    severity
+    default status = "Pending"
+
+  SAVE issue in MongoDB
+  APPEND issue ID to user's issuesReported list
+  RETURN success
+END
+
+5. FETCH ALL ISSUES
+START
+  READ all issues from MongoDB
+  POPULATE issue owner details
+  SORT by newest first
+  RETURN issues list
+END
+
+6. FILTER ISSUES ON FRONTEND
+START
+  LOAD all issues
+  READ selected filters:
+    city
+    state
+    category
+    severity
+
+  FOR each selected filter
+    KEEP only matching issues
+  ENDFOR
+
+  DISPLAY filtered issues
+END
+
+7. FETCH ISSUE DETAILS
+START
+  VERIFY JWT token
+  READ issue ID
+  VALIDATE issue ID format
+  FIND issue by ID
+  POPULATE issue owner
+  POPULATE comment users
+
+  IF issue not found
+    RETURN error
+  ENDIF
+
+  RETURN issue details
+END
+
+8. UPVOTE ISSUE
+START
+  VERIFY JWT token
+  READ issue ID
+  FIND issue
+
+  IF issue not found
+    RETURN error
+  ENDIF
+
+  IF user already upvoted
+    REMOVE user from upvotes
+  ELSE
+    ADD user to upvotes
+    IF user already downvoted
+      REMOVE user from downvotes
+    ENDIF
+  ENDIF
+
+  SAVE issue
+  RETURN updated vote counts
+END
+
+9. DOWNVOTE ISSUE
+START
+  VERIFY JWT token
+  READ issue ID
+  FIND issue
+
+  IF issue not found
+    RETURN error
+  ENDIF
+
+  IF user already downvoted
+    REMOVE user from downvotes
+  ELSE
+    ADD user to downvotes
+    IF user already upvoted
+      REMOVE user from upvotes
+    ENDIF
+  ENDIF
+
+  SAVE issue
+  RETURN updated vote counts
+END
+
+10. ADD COMMENT
+START
+  VERIFY JWT token
+  READ issue ID and comment text
+
+  IF comment text is empty
+    RETURN error
+  ENDIF
+
+  FIND issue
+  IF issue not found
+    RETURN error
+  ENDIF
+
+  APPEND new comment with:
+    user ID
+    text
+    createdAt timestamp
+
+  SAVE issue
+  RETURN updated comments
+END
+
+11. DELETE OWN ISSUE
+START
+  VERIFY JWT token
+  READ issue ID
+  FIND issue
+
+  IF issue not found
+    RETURN error
+  ENDIF
+
+  IF logged-in user is neither issue owner nor admin
+    RETURN "Unauthorized"
+  ENDIF
+
+  DELETE issue from MongoDB
+  REMOVE issue ID from owner's issuesReported list
+  RETURN success
+END
+
+12. ADMIN VIEW DASHBOARD
+START
+  VERIFY JWT token
+  CHECK user role is admin
+  IF not admin
+    RETURN "Forbidden"
+  ENDIF
+
+  FETCH all users
+  FETCH all issues
+  CALCULATE stats:
+    total users
+    total issues
+    pending count
+    working count
+    done count
+
+  DISPLAY dashboard charts and tables
+END
+
+13. ADMIN MANAGE USERS
+START
+  VERIFY JWT token
+  CHECK admin role
+  FETCH all users
+
+  IF admin deletes a user
+    DELETE user from MongoDB
+    DELETE all issues created by that user
+  ENDIF
+
+  RETURN updated users data
+END
+
+14. ADMIN MANAGE ISSUES
+START
+  VERIFY JWT token
+  CHECK admin role
+  FETCH all issues
+
+  ADMIN can:
+    view issue
+    filter issue
+    delete issue
+    update issue
+    update status
+
+  RETURN updated issues data
+END
+
+15. ADMIN UPDATE ISSUE STATUS
+START
+  VERIFY JWT token
+  CHECK admin role
+  READ issue ID and new status
+
+  IF status is not one of:
+    Pending, Working, Done
+    RETURN error
+  ENDIF
+
+  UPDATE issue status
+  IF status = "Done"
+    STORE resolvedAt timestamp
+  ENDIF
+
+  SAVE and RETURN updated issue
+END
+
+16. CHATBOT REQUEST
+START
+  READ chat messages from frontend
+  APPLY in-memory rate limit by IP
+  IF request count exceeds allowed limit
+    RETURN "Too many requests"
+  ENDIF
+
+  VALIDATE message array
+  IF messages are invalid
+    RETURN error
+  ENDIF
+
+  LOAD system prompt for Seva Bot
+  PREPEND system prompt to conversation
+  SEND conversation to Groq API
+
+  IF Groq responds successfully
+    RETURN chatbot reply
+  ELSE
+    RETURN fallback error message
+  ENDIF
+END
+
+17. FRONTEND APP FLOW
+START
+  OPEN landing page
+  IF user chooses signup
+    GO TO signup page
+  ELSE IF user chooses login
+    GO TO login page
+  ELSE
+    GO TO dashboard
+  ENDIF
+
+  IF logged in user is admin
+    SHOW admin dashboard link
+  ENDIF
+
+  ALLOW user to:
+    browse issues
+    post issue
+    open issue details
+    vote
+    comment
+    view profile
+    use chatbot
+END
+
+18. OVERALL SYSTEM FLOW
+START
+  USER interacts with React frontend
+  FRONTEND sends requests to Express backend
+  BACKEND validates auth and role
+  BACKEND executes business logic
+  BACKEND reads/writes MongoDB
+  BACKEND communicates with external services when needed:
+    Cloudinary
+    Google Maps / Geolocation
+    Groq API
+  FRONTEND receives response and updates UI
+END

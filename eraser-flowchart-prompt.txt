@@ -1,0 +1,78 @@
+Create a simple high-level flowchart for a project called "CivicEye / Issue Tracker", a civic grievance reporting platform.
+
+Make it clean, minimal, and easy to understand.
+Use a left-to-right flow.
+Group the diagram into these sections:
+1. Users
+2. Frontend
+3. Backend
+4. Database
+5. External Services
+
+Include these main nodes:
+
+Users:
+- Citizen User
+- Admin User
+
+Frontend:
+- Landing Page
+- Login / Signup
+- Dashboard
+- Post Issue
+- Issue Details
+- Profile
+- Admin Dashboard
+- Seva Bot Chat Widget
+
+Backend:
+- Express API
+- Authentication
+- Issue Management
+- Admin Management
+- Chatbot Service
+
+Database:
+- MongoDB
+- Users
+- Issues
+- Comments
+
+External Services:
+- Cloudinary
+- Google Maps / Geolocation
+- Groq API
+
+Show only the main flow, not every API request:
+
+Citizen User flow:
+Citizen User -> Frontend -> Authentication -> Backend -> MongoDB
+Citizen User -> Dashboard -> View Issues
+Citizen User -> Post Issue -> Upload Image + Get Location -> Backend -> MongoDB
+Citizen User -> Issue Details -> Vote / Comment -> Backend -> MongoDB
+Citizen User -> Profile -> View Own Reports
+
+Admin User flow:
+Admin User -> Frontend -> Authentication -> Backend -> MongoDB
+Admin User -> Admin Dashboard -> Manage Users
+Admin User -> Admin Dashboard -> Manage Issues
+Admin User -> Update Issue Status -> Backend -> MongoDB
+
+Chatbot flow:
+User -> Seva Bot Chat Widget -> Backend Chatbot Service -> Groq API -> Response to User
+
+External service connections:
+Post Issue -> Cloudinary for image upload
+Post Issue / Issue Details -> Google Maps / Geolocation
+Chat Widget -> Groq API
+
+Add a final node showing:
+"Resolved civic issue visible to community and admins"
+
+Title:
+"CivicEye Simple System Flow"
+
+Use distinct arrow colors for:
+- Citizen flow
+- Admin flow
+- System/service flow

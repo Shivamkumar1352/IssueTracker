@@ -46,7 +46,7 @@ const Bubble = ({ msg }) => {
           className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm"
           style={{ background: "var(--saffron)", color: "var(--bg-base)" }}
         >
-          🪔
+            🤖
         </div>
       )}
       <div
@@ -75,7 +75,7 @@ const TypingDots = () => (
       className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm"
       style={{ background: "var(--saffron)", color: "var(--bg-base)" }}
     >
-      🪔
+        🤖
     </div>
     <div
       className="flex items-center gap-1 px-4 py-3"
@@ -245,7 +245,7 @@ const ChatBot = () => {
                 className="w-9 h-9 rounded-full flex items-center justify-center text-lg relative"
                 style={{ background: "var(--saffron)", boxShadow: "0 2px 8px rgba(232,101,10,0.35)" }}
               >
-                🪔
+                  🤖
                 <div
                   className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
                   style={{ background: "var(--status-done)", borderColor: "var(--bg-card)" }}
