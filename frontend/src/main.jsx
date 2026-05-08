@@ -5,10 +5,12 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import { ThemeProvider } from './context/ThemeContext.jsx'
+import { initializeAuth } from './utils/auth.jsx'
 
 // ── Prevent flash of wrong theme on first load ──
 const saved = localStorage.getItem("theme") || "dark";
 document.documentElement.setAttribute("data-theme", saved);
+initializeAuth();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,10 +1,11 @@
 import React from "react";
 import axios from "axios";
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const UsersTable = ({ users, refresh }) => {
-  const token = localStorage.getItem("token");
+  const token = getValidToken();
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;

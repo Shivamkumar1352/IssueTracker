@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { handleError, handleSuccess } from "../../utils/utils";
-import { jwtDecode } from "jwt-decode";
+import { getUserRole, getValidToken } from "../../utils/auth";
 
 const IssueDetails = () => {
   const { id } = useParams();
@@ -17,16 +17,12 @@ const IssueDetails = () => {
   const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try { setUserRole(jwtDecode(token).role || "user"); }
-      catch { console.error("Invalid token"); }
-    }
+    setUserRole(getUserRole() || "user");
   }, []);
 
   const fetchIssue = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res   = await axios.get(`${API_URL}/issues/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -44,7 +40,7 @@ const IssueDetails = () => {
 
   const handleVote = async (type) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res   = await axios.patch(`${API_URL}/issues/${id}/${type}`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setVotes({ upvotes: res.data.upvotes, downvotes: res.data.downvotes });
       handleSuccess("Vote updated!");
@@ -54,7 +50,7 @@ const IssueDetails = () => {
   const handleAddComment = async () => {
     if (!comment.trim()) return handleError("Comment cannot be empty");
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res   = await axios.post(`${API_URL}/issues/${id}/comment`, { text: comment }, { headers: { Authorization: `Bearer ${token}` } });
       handleSuccess("Comment added!");
       setComment("");
@@ -64,7 +60,7 @@ const IssueDetails = () => {
 
   const handleStatusUpdate = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       await axios.patch(`${API_URL}/issues/${id}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
       handleSuccess("Status updated!");
       fetchIssue();
@@ -318,4 +314,3 @@ const IssueDetails = () => {
 };
 
 export default IssueDetails;
-

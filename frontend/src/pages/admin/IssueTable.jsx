@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,7 +18,7 @@ const statusColor = {
 };
 
 const IssuesTable = ({ issues, refresh }) => {
-  const token    = localStorage.getItem("token");
+  const token    = getValidToken();
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState({

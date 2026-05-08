@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { handleError, handleSuccess } from "../../utils/utils";
+import { getValidToken } from "../../utils/auth";
 
 const PostIssue = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const PostIssue = () => {
       return;
     }
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       if (!token) return handleError("Unauthorized. Please log in.");
 
       const formData = new FormData();
@@ -242,4 +243,3 @@ const PostIssue = () => {
 };
 
 export default PostIssue;
-

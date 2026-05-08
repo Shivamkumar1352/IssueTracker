@@ -12,18 +12,21 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoute from "./pages/admin/AdminRoute";
 import LandingPage from "./pages/landing/LandingPage";
 import ChatBot from "./components/ChatBot";
+import { expireSession, getStoredToken, getValidToken } from "./utils/auth";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const token = getValidToken();
+  const storedToken = getStoredToken();
   const hasShownToast = useRef(false);
   const location = useLocation();
 
   useEffect(() => {
     if (!token && !hasShownToast.current) {
-      handleError("Login required!");
+      if (storedToken) expireSession();
+      else handleError("Login required!");
       hasShownToast.current = true;
     }
-  }, [token, location]);
+  }, [token, storedToken, location]);
 
   return token ? children : <Navigate to="/login" replace />;
 };
@@ -46,7 +49,7 @@ function App() {
         {/* Protected */}
         <Route path="/post"        element={<ProtectedRoute><PostIssue /></ProtectedRoute>} />
         <Route path="/issue/:id"   element={<ProtectedRoute><IssueDetails /></ProtectedRoute>} />
-        <Route path="/profile"     element={<Profile />} />
+        <Route path="/profile"     element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
 

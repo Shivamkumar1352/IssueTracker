@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { handleError, handleSuccess } from "../../utils/utils";
+import { clearAuth, getValidToken } from "../../utils/auth";
 
 const statusColor = {
   Done:    "var(--status-done)",
@@ -11,7 +12,7 @@ const statusColor = {
 const Profile = () => {
   const [user,   setUser]   = useState(null);
   const [issues, setIssues] = useState([]);
-  const token   = localStorage.getItem("token");
+  const token   = getValidToken();
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -30,7 +31,7 @@ const Profile = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
+    clearAuth();
     handleSuccess("Logged out successfully! 👋");
     setTimeout(() => { window.location.href = "/login"; }, 1000);
   };
@@ -179,4 +180,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

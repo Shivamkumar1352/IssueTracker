@@ -2,8 +2,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, User, Shield } from "lucide-react";
 import "./Header.css";
 import { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
 import { useTheme } from "../../context/ThemeContext";
+import { getUserRole, getValidToken } from "../../utils/auth";
 
 const navLinks = [
   { name: "Home",   path: "/" },
@@ -31,17 +31,12 @@ const ThemeToggle = () => {
 const Header = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const token     = localStorage.getItem("token");
+  const token     = getValidToken();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdmin,  setIsAdmin]  = useState(false);
 
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        if (decoded.role === "admin") setIsAdmin(true);
-      } catch (err) { console.error("Invalid token:", err); }
-    }
+    setIsAdmin(getUserRole() === "admin");
   }, [token]);
 
   // Close mobile menu on route change
@@ -234,4 +229,3 @@ const Header = () => {
 };
 
 export default Header;
-

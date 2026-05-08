@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,7 +18,7 @@ const AdminDashboard = () => {
   const [users,  setUsers]  = useState([]);
   const [issues, setIssues] = useState([]);
   const [stats,  setStats]  = useState({ totalUsers: 0, totalIssues: 0, pending: 0, working: 0, done: 0 });
-  const token = localStorage.getItem("token");
+  const token = getValidToken();
 
   useEffect(() => { fetchData(); }, []);
 
